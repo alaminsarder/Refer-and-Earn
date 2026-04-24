@@ -1,36 +1,73 @@
 import React, { useState } from "react";
-import { loginUser } from "../../services/auth.api";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import "./auth.css";
+
+const h = React.createElement;
 
 export default function Login() {
-  const nav = useNavigate();
-  const [form, setForm] = useState({ email: "", password: "" });
-  const [msg, setMsg] = useState("");
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
-  const onChange = (e) => setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
-
-  const submit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setMsg("");
+    setError(""); // আগের এরর ক্লিয়ার করা
+
     try {
-      const res = await loginUser(form);
-      localStorage.setItem("token", res.data.token);
-      nav("/dashboard");
+      // ব্যাকএন্ডে লগইন রিকোয়েস্ট পাঠানো
+      const res = await axios.post("http://localhost:5000/api/auth/login", {
+        email,
+        password,
+      });
+
+      if (res.data.token) {
+        // টোকেন এবং ইউজার ইনফো লোকাল স্টোরেজে সেভ করা
+        localStorage.setItem("token", res.data.token);
+        localStorage.setItem("user", JSON.stringify(res.data.user));
+
+        alert("Login Successful!");
+        navigate("/dashboard"); // ড্যাশবোর্ডে নিয়ে যাওয়া
+      }
     } catch (err) {
-      setMsg(err?.response?.data?.message || "Login failed");
+      // ভুল ইমেইল বা পাসওয়ার্ড হলে এরর দেখানো
+      setError(err.response?.data?.message || "Login failed. Please try again.");
     }
   };
 
-  return (
-    <div style={{ padding: 24, maxWidth: 420, margin: "40px auto" }}>
-      <h2>Login</h2>
-      {msg ? <p style={{ color: "crimson" }}>{msg}</p> : null}
+  return h("div", { className: "auth-container" },
+    h("div", { className: "auth-card" },
+      h("h2", { className: "auth-title" }, "Welcome Back"),
+      h("p", { className: "auth-subtitle" }, "Log in to manage your referrals"),
+      
+      // এরর মেসেজ দেখানোর জন্য
+      error && h("p", { style: { color: "#ef4444", textAlign: "center", fontWeight: "600", marginBottom: "15px" } }, error),
 
-      <form onSubmit={submit} style={{ display: "grid", gap: 10 }}>
-        <input name="email" placeholder="Email" value={form.email} onChange={onChange} />
-        <input name="password" type="password" placeholder="Password" value={form.password} onChange={onChange} />
-        <button type="submit">Login</button>
-      </form>
-    </div>
+      h("form", { onSubmit: handleSubmit, className: "auth-form" },
+        h("div", { className: "input-group" },
+          h("label", null, "Email Address"),
+          h("input", { 
+            type: "email", 
+            placeholder: "Enter your email", 
+            value: email, 
+            onChange: (e) => setEmail(e.target.value), 
+            required: true 
+          })
+        ),
+        h("div", { className: "input-group" },
+          h("label", null, "Password"),
+          h("input", { 
+            type: "password", 
+            placeholder: "Enter password", 
+            value: password, 
+            onChange: (e) => setPassword(e.target.value), 
+            required: true 
+          })
+        ),
+        h("button", { type: "submit", className: "btn-auth" }, "Login Now")
+      ),
+      h("p", { className: "auth-switch" }, "Don't have an account? ", h(Link, { to: "/register" }, "Register"))
+    )
   );
 }

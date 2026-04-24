@@ -1,4 +1,4 @@
-﻿require("dotenv").config();
+require("dotenv").config(); // .env ফাইল লোড করার জন্য
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -10,20 +10,17 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log("✅ MongoDB Connected Successfully"))
+// MongoDB Connection (Using your .env URI)
+const mongoURI = process.env.MONGODB_URI;
+mongoose.connect(mongoURI)
+  .then(() => console.log("✅ MongoDB Connected to Atlas"))
   .catch(err => console.log("❌ MongoDB Connection Error:", err));
 
 // Routes
 app.use("/api/auth", authRoutes);
 
-// Basic Route
-app.get("/", (req, res) => {
-  res.send("Refer & Earn API is running...");
-});
-
+// Server Start
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on: http://localhost:${PORT}`);
+  console.log(`🚀 Server is running on port ${PORT}`);
 });

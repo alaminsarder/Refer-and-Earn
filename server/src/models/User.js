@@ -1,21 +1,13 @@
 const mongoose = require("mongoose");
 
-const UserSchema = new mongoose.Schema(
-  {
-    name: { type: String, required: true, trim: true },
-    email: { type: String, required: true, unique: true, lowercase: true, trim: true },
-    passwordHash: { type: String, required: true },
+const userSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  referralCode: { type: String, unique: true }, // ইউজারের নিজস্ব কোড
+  referredBy: { type: String, default: null },   // যাকে দিয়ে জয়েন করেছে
+  earnings: { type: Number, default: 0 },
+  createdAt: { type: Date, default: Date.now }
+});
 
-    role: { type: String, enum: ["user", "admin"], default: "user" },
-
-    referralCode: { type: String, unique: true, index: true },
-    referredBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
-
-    isFirstPaid: { type: Boolean, default: false },
-
-    walletBalance: { type: Number, default: 0 }, // simple wallet
-  },
-  { timestamps: true }
-);
-
-module.exports = mongoose.model("User", UserSchema);
+module.exports = mongoose.model("User", userSchema);

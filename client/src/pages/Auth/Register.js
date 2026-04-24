@@ -1,39 +1,64 @@
-import { useSearchParams } from "react-router-dom";
-import React, { useState } from "react";
-import { registerUser } from "../../services/auth.api";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios"; // API কলের জন্য
+import "./auth.css";
+
+const h = React.createElement;
 
 export default function Register() {
-  const nav = useNavigate();
-  const [form, setForm] = useState({ name: "", email: "", password: "", referralCode: "" });
-  const [msg, setMsg] = useState("");
+  const navigate = useNavigate();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [refCode, setRefCode] = useState("");
+  const [message, setMessage] = useState("");
 
-  const onChange = (e) => setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("ref");
+    if (code) setRefCode(code);
+  }, []);
 
-  const submit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setMsg("");
     try {
-      const res = await registerUser(form);
-      localStorage.setItem("token", res.data.token);
-      nav("/dashboard");
+      const res = await axios.post("http://localhost:5000/api/auth/register", {
+        name,
+        email,
+        password,
+        referralCode: refCode
+      });
+      alert("Registration Successful! Your Code: " + res.data.myCode);
+      navigate("/login");
     } catch (err) {
-      setMsg(err?.response?.data?.message || "Register failed");
+      setMessage(err.response?.data?.message || "Registration failed");
     }
   };
 
-  return (
-    <div style={{ padding: 24, maxWidth: 420, margin: "40px auto" }}>
-      <h2>Register</h2>
-      {msg ? <p style={{ color: "crimson" }}>{msg}</p> : null}
-
-      <form onSubmit={submit} style={{ display: "grid", gap: 10 }}>
-        <input name="name" placeholder="Name" value={form.name} onChange={onChange} />
-        <input name="email" placeholder="Email" value={form.email} onChange={onChange} />
-        <input name="password" type="password" placeholder="Password" value={form.password} onChange={onChange} />
-        <input name="referralCode" placeholder="Referral Code (optional)" value={form.referralCode} onChange={onChange} />
-        <button type="submit">Create Account</button>
-      </form>
-    </div>
+  return h("div", { className: "auth-container" },
+    h("div", { className: "auth-card" },
+      h("h2", { className: "auth-title" }, "Create Account"),
+      message && h("p", { style: { color: "red", textAlign: "center" } }, message),
+      h("form", { onSubmit: handleSubmit, className: "auth-form" },
+        h("div", { className: "input-group" },
+          h("label", null, "Full Name"),
+          h("input", { type: "text", placeholder: "John Doe", value: name, onChange: (e) => setName(e.target.value), required: true })
+        ),
+        h("div", { className: "input-group" },
+          h("label", null, "Email Address"),
+          h("input", { type: "email", placeholder: "name@example.com", value: email, onChange: (e) => setEmail(e.target.value), required: true })
+        ),
+        h("div", { className: "input-group" },
+          h("label", null, "Password"),
+          h("input", { type: "password", placeholder: "Min 6 characters", value: password, onChange: (e) => setPassword(e.target.value), required: true })
+        ),
+        h("div", { className: "input-group" },
+          h("label", null, "Referral Code (Optional)"),
+          h("input", { type: "text", className: "ref-highlight", placeholder: "Code from friend", value: refCode, onChange: (e) => setRefCode(e.target.value) })
+        ),
+        h("button", { type: "submit", className: "btn-auth" }, "Create My Account")
+      ),
+      h("p", { className: "auth-switch" }, "Already have an account? ", h(Link, { to: "/login" }, "Login"))
+    )
   );
 }

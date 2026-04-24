@@ -1,0 +1,68 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+
+:root {
+  --primary: #6366f1;
+  --bg: #f8fafc;
+  --dark: #0f172a;
+}
+
+.app-container { display: flex; min-height: 100vh; background: var(--bg); font-family: 'Plus Jakarta Sans', sans-serif; }
+
+/* Sidebar Pro */
+.sidebar-pro { width: 280px; background: var(--dark); padding: 40px 20px; display: flex; flex-direction: column; position: fixed; height: 100vh; }
+.brand-area { color: white; font-size: 1.5rem; font-weight: 800; margin-bottom: 50px; text-align: center; }
+.brand-area span { color: var(--primary); }
+
+.side-nav { display: flex; flex-direction: column; gap: 10px; flex-grow: 1; }
+.side-nav button {
+  background: transparent; border: none; color: #94a3b8; padding: 16px; 
+  text-align: left; border-radius: 12px; display: flex; align-items: center; gap: 15px;
+  font-weight: 600; font-size: 1rem; cursor: pointer; transition: 0.3s;
+}
+.side-nav button.active, .side-nav button:hover { background: rgba(255,255,255,0.05); color: white; }
+
+.signout-btn { background: rgba(239, 68, 68, 0.1); border: none; color: #f87171; padding: 15px; border-radius: 12px; display: flex; align-items: center; gap: 15px; font-weight: 700; cursor: pointer; }
+
+/* Main Panel */
+.main-panel { margin-left: 280px; flex-grow: 1; padding: 40px 60px; }
+.dash-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+.profile-icon { width: 50px; height: 50px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.2rem; }
+
+.balance-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; margin-bottom: 40px; }
+.card-stat { padding: 30px; border-radius: 24px; color: white; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+.card-stat.blue { background: linear-gradient(135deg, #6366f1, #3b82f6); }
+.card-stat.purple { background: linear-gradient(135deg, #a855f7, #ec4899); }
+.card-stat.green { background: linear-gradient(135deg, #10b981, #059669); }
+
+.invite-banner { background: white; padding: 40px; border-radius: 24px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #e2e8f0; }
+.link-group { display: flex; gap: 10px; width: 50%; }
+.link-group input { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; background: #f8fafc; font-weight: 600; }
+.link-group button { background: var(--dark); color: white; border: none; padding: 0 20px; border-radius: 8px; font-weight: 700; cursor: pointer; }
+
+/* Payout UI */
+.payout-toggle { display: flex; background: #e2e8f0; padding: 5px; border-radius: 12px; width: fit-content; margin-bottom: 30px; }
+.payout-toggle button { padding: 10px 30px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; transition: 0.3s; }
+.payout-toggle button.selected { background: white; color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+
+.payout-box { background: white; padding: 40px; border-radius: 24px; max-width: 500px; border: 1px solid #e2e8f0; }
+.form-payout { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
+.form-payout input, .form-payout select { padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; font-size: 1rem; }
+.btn-submit-payout { background: var(--primary); color: white; border: none; padding: 18px; border-radius: 10px; font-weight: 800; cursor: pointer; }
+
+/* Network Table */
+.table-wrapper { background: white; padding: 20px; border-radius: 24px; border: 1px solid #e2e8f0; }
+.network-table { width: 100%; border-collapse: collapse; text-align: left; }
+.network-table th { padding: 15px; color: #64748b; font-size: 0.9rem; border-bottom: 1px solid #f1f5f9; }
+.network-table td { padding: 15px; font-weight: 600; border-bottom: 1px solid #f1f5f9; }
+.badge { padding: 5px 12px; border-radius: 6px; font-size: 0.8rem; }
+.badge.active { background: #dcfce7; color: #16a34a; }
+.badge.pending { background: #fef9c3; color: #a16207; }
+
+@media (max-width: 992px) {
+  .sidebar-pro { width: 80px; padding: 40px 10px; }
+  .sidebar-pro span, .brand-area { display: none; }
+  .main-panel { margin-left: 80px; padding: 30px; }
+  .balance-row { grid-template-columns: 1fr; }
+  .invite-banner { flex-direction: column; gap: 20px; }
+  .link-group { width: 100%; }
+}
