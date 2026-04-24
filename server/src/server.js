@@ -5,25 +5,17 @@ const cors = require("cors");
 const authRoutes = require("./routes/authRoutes");
 
 const app = express();
-
-// Middleware
 app.use(express.json());
 app.use(cors());
 
-// MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log("✅ MongoDB Connected Successfully"))
-  .catch(err => console.log("❌ MongoDB Connection Error:", err));
+  .then(() => console.log("✅ MongoDB Connected"))
+  .catch(err => console.log("❌ DB Error:", err));
 
-// Routes
 app.use("/api/auth", authRoutes);
 
-// Basic Route
-app.get("/", (req, res) => {
-  res.send("Refer & Earn API is running...");
-});
+// এটি Vercel-এর জন্য খুবই জরুরি
+module.exports = app;
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on: http://localhost:${PORT}`);
-});
+app.listen(PORT, () => console.log(`Server on ${PORT}`));
