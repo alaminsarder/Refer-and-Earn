@@ -8,41 +8,47 @@ const API_URL = window.location.hostname === "localhost" ? "http://localhost:500
 
 export default function Login() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
+
+  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     try {
-      const res = await axios.post(`${API_URL}/api/auth/login`, { email, password });
+      const res = await axios.post(`${API_URL}/api/auth/login`, formData);
       if (res.data.token) {
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("user", JSON.stringify(res.data.user));
         navigate("/dashboard");
       }
     } catch (err) {
-      setError(err.response?.data?.message || "Login failed");
+      setError(err.response?.data?.message || "Invalid credentials. Try again!");
     }
   };
 
-  return h("div", { className: "auth-container" },
-    h("div", { className: "auth-card" },
-      h("h2", { className: "auth-title" }, "Welcome Back"),
-      error && h("p", { style: { color: "red", textAlign: "center" } }, error),
-      h("form", { onSubmit: handleSubmit, className: "auth-form" },
-        h("div", { className: "input-group" },
-          h("label", null, "Email Address"),
-          h("input", { type: "email", value: email, onChange: (e) => setEmail(e.target.value), required: true })
-        ),
-        h("div", { className: "input-group" },
-          h("label", null, "Password"),
-          h("input", { type: "password", value: password, onChange: (e) => setPassword(e.target.value), required: true })
-        ),
-        h("button", { type: "submit", className: "btn-auth" }, "Login Now")
+  return h("div", { className: "auth-wrapper" },
+    h("div", { className: "auth-glass-card" },
+      h("div", { className: "auth-head" },
+        h("h2", null, "Welcome ", h("span", { className: "text-grad" }, "Back")),
+        h("p", null, "Log in to your referral dashboard")
       ),
-      h("p", { className: "auth-switch" }, "Don't have an account? ", h(Link, { to: "/register" }, "Register"))
+      error && h("p", { className: "alert error" }, error),
+      h("form", { onSubmit: handleSubmit, className: "form-stack" },
+        h("div", { className: "field" },
+          h("label", null, "Email Address"),
+          h("input", { type: "email", name: "email", placeholder: "Enter your email", required: true, value: formData.email, onChange: handleChange })
+        ),
+        h("div", { className: "field" },
+          h("label", null, "Password"),
+          h("input", { type: "password", name: "password", placeholder: "Enter your password", required: true, value: formData.password, onChange: handleChange })
+        ),
+        h("button", { type: "submit", className: "btn-gradient" }, "Login Now")
+      ),
+      h("div", { className: "auth-footer" },
+        h("p", null, "New to ReferEarn? ", h(Link, { to: "/register" }, "Create Account"))
+      )
     )
   );
 }

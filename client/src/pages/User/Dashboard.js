@@ -4,104 +4,127 @@ import "./dashboard.css";
 
 const h = React.createElement;
 
-/* --- Icons --- */
-const Icons = {
-  Home: () => h("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2" }, h("path", { d: "m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" })),
-  Wallet: () => h("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2" }, h("rect", { x: "2", y: "5", width: "20", height: "14", rx: "2" }), h("path", { d: "M12 12h.01" })),
-  Network: () => h("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2" }, h("path", { d: "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" }), h("circle", { cx: "9", cy: "7", r: "4" }), h("path", { d: "M23 21v-2a4 4 0 0 0-3-3.87" }), h("path", { d: "M16 3.13a4 4 0 0 1 0 7.75" })),
-  Logout: () => h("svg", { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2" }, h("path", { d: "M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" }), h("polyline", { points: "16 17 21 12 16 7" }), h("line", { x1: "21", x2: "9", y1: "12", y2: "12" }))
-};
+// স্পিন হুইলের ১৪টি সেগমেন্ট (আপনার রিকোয়েস্ট অনুযায়ী)
+const WHEEL_VALS = ["10", "20", "00", "50", "10", "00", "30", "10", "100", "50", "10", "00", "20", "10"];
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  const [activeTab, setActiveTab] = useState("overview"); // overview, payout, network
-  const [payoutType, setPayoutType] = useState("withdraw"); // withdraw or deposit
-
-  // Mock Referral Data (পরে API থেকে আসবে)
-  const referrals = [
-    { id: 1, name: "Sabbir Hossain", email: "sabbir@example.com", status: "Active", reward: "$10.00" },
-    { id: 2, name: "Tanvir Ahmed", email: "tanvir@example.com", status: "Pending", reward: "$0.00" },
-    { id: 3, name: "Rakibul Islam", email: "rakib@example.com", status: "Active", reward: "$10.00" },
-  ];
+  const [activeTab, setActiveTab] = useState("overview");
+  const [coins, setCoins] = useState(500);
+  const [rotation, setRotation] = useState(0);
+  const [isSpinning, setIsSpinning] = useState(false);
+  const [flipResult, setFlipResult] = useState("");
 
   useEffect(() => {
-    const userData = localStorage.getItem("user");
-    if (!userData) navigate("/login");
-    else setUser(JSON.parse(userData));
+    const data = localStorage.getItem("user");
+    if (!data) navigate("/login");
+    else setUser(JSON.parse(data));
   }, [navigate]);
 
-  const handleLogout = () => { localStorage.clear(); navigate("/login"); };
+  const logout = () => { localStorage.clear(); navigate("/login"); };
 
-  if (!user) return h("div", { className: "loader" }, "Connecting to Secure Server...");
+  // --- Spin Logic ---
+  const handleSpin = () => {
+    if (coins < 20 || isSpinning) return;
+    setCoins(c => c - 20);
+    setIsSpinning(true);
+    const randomIndex = Math.floor(Math.random() * 14);
+    const newRot = rotation + (360 * 5) + (360 - (randomIndex * (360 / 14)));
+    setRotation(newRot);
+    setTimeout(() => {
+      setIsSpinning(false);
+      setCoins(c => c + parseInt(WHEEL_VALS[randomIndex]));
+    }, 4000);
+  };
 
-  return h("div", { className: "app-container" },
-    
-    // --- SIDEBAR ---
-    h("aside", { className: "sidebar-pro" },
-      h("div", { className: "brand-area" }, "Refer", h("span", null, "Earn")),
+  if (!user) return h("div", { className: "loader" }, "Loading...");
+
+  return h("div", { className: "dashboard-container" },
+    h("aside", { className: "sidebar-modern" },
+      h("div", { className: "side-logo" }, "Refer", h("span", null, "Earn")),
       h("nav", { className: "side-nav" },
-        h("button", { className: activeTab === "overview" ? "active" : "", onClick: () => setActiveTab("overview") }, Icons.Home(), h("span", null, "Dashboard")),
-        h("button", { className: activeTab === "payout" ? "active" : "", onClick: () => setActiveTab("payout") }, Icons.Wallet(), h("span", null, "Payouts")),
-        h("button", { className: activeTab === "network" ? "active" : "", onClick: () => setActiveTab("network") }, Icons.Network(), h("span", null, "My Network"))
+        h("button", { className: activeTab === "overview" ? "active" : "", onClick: () => setActiveTab("overview") }, "Overview"),
+        h("button", { className: activeTab === "network" ? "active" : "", onClick: () => setActiveTab("network") }, "My Network"),
+        h("button", { className: activeTab === "payout" ? "active" : "", onClick: () => setActiveTab("payout") }, "Payouts"),
+        h("button", { className: activeTab === "games" ? "active" : "gold-link", onClick: () => setActiveTab("games") }, "Casino Games"),
+        h("button", { className: activeTab === "profile" ? "active" : "", onClick: () => setActiveTab("profile") }, "My Profile")
       ),
-      h("button", { className: "signout-btn", onClick: handleLogout }, Icons.Logout(), h("span", null, "Logout"))
+      h("button", { className: "side-logout", onClick: logout }, "Logout")
     ),
 
-    // --- MAIN ---
-    h("main", { className: "main-panel" },
-      h("header", { className: "dash-top" },
-        h("div", null, h("h2", null, "Welcome, " + user.name), h("p", null, "Manage your referral empire")),
-        h("div", { className: "profile-icon" }, user.name[0])
+    h("main", { className: "main-content" },
+      h("header", { className: "top-header" },
+        h("h2", null, activeTab.toUpperCase()),
+        h("div", { className: "user-pill", onClick: () => setActiveTab("profile") }, 
+          h("span", null, "🪙 " + coins),
+          h("div", { className: "avatar" }, user.name[0])
+        )
       ),
 
       // --- OVERVIEW ---
-      activeTab === "overview" && h("div", { className: "view-container" },
-        h("div", { className: "balance-row" },
-          h("div", { className: "card-stat blue" }, h("p", null, "Main Balance"), h("h3", null, "$ " + (user.earnings || "0.00"))),
-          h("div", { className: "card-stat purple" }, h("p", null, "Total Referrals"), h("h3", null, "15")),
-          h("div", { className: "card-stat green" }, h("p", null, "Pending Bonus"), h("h3", null, "$ 50.00"))
+      activeTab === "overview" && h("div", { className: "tab-body" },
+        h("div", { className: "stats-row" },
+          h("div", { className: "stat-card blue" }, h("p", null, "Balance"), h("h2", null, "$"+user.earnings)),
+          h("div", { className: "stat-card purple" }, h("p", null, "Referrals"), h("h2", null, "12"))
         ),
-        h("div", { className: "invite-banner" },
-          h("div", null, h("h4", null, "Invite and earn $10 per person"), h("p", null, "Share your link to grow your earnings.")),
-          h("div", { className: "link-group" },
-            h("input", { readOnly: true, value: window.location.origin + "/register?ref=" + user.referralCode }),
-            h("button", { onClick: () => { navigator.clipboard.writeText(window.location.origin + "/register?ref=" + user.referralCode); alert("Copied!"); } }, "Copy")
+        h("div", { className: "invite-box" },
+          h("h4", null, "Referral Link"),
+          h("div", { className: "copy-row" },
+            h("input", { readOnly: true, value: window.location.origin+"/register?ref="+user.referralCode }),
+            h("button", { onClick: () => alert("Copied!") }, "Copy")
           )
         )
       ),
 
-      // --- PAYOUT (Deposit & Withdraw) ---
-      activeTab === "payout" && h("div", { className: "view-container" },
-        h("div", { className: "payout-toggle" },
-          h("button", { className: payoutType === "withdraw" ? "selected" : "", onClick: () => setPayoutType("withdraw") }, "Withdraw"),
-          h("button", { className: payoutType === "deposit" ? "selected" : "", onClick: () => setPayoutType("deposit") }, "Deposit")
-        ),
-        h("div", { className: "payout-box" },
-          h("h3", null, payoutType === "withdraw" ? "Cash Out Your Earnings" : "Deposit Funds to Wallet"),
-          h("div", { className: "form-payout" },
-            h("label", null, "Amount ($)"),
-            h("input", { type: "number", placeholder: "Enter amount" }),
-            h("label", null, "Payment Gateway"),
-            h("select", null, h("option", null, "Bkash / Nagad"), h("option", null, "Bank Transfer"), h("option", null, "PayPal")),
-            h("button", { className: "btn-submit-payout" }, payoutType === "withdraw" ? "Request Withdrawal" : "Make Deposit")
+      // --- PAYOUT ---
+      activeTab === "payout" && h("div", { className: "tab-body" },
+        h("div", { className: "payout-card" },
+          h("div", { className: "payout-header" }, h("button", null, "Withdraw"), h("button", null, "Deposit")),
+          h("div", { className: "payout-inputs" },
+            h("input", { type: "number", placeholder: "Amount ($)" }),
+            h("select", null, h("option", null, "Bkash"), h("option", null, "Bank")),
+            h("button", { className: "btn-payout" }, "Process")
           )
         )
       ),
 
-      // --- MY NETWORK ---
-      activeTab === "network" && h("div", { className: "view-container" },
-        h("h3", { className: "view-title" }, "Referral Network"),
-        h("div", { className: "table-wrapper" },
-          h("table", { className: "network-table" },
-            h("thead", null, h("tr", null, h("th", null, "Name"), h("th", null, "Email"), h("th", null, "Status"), h("th", null, "Commission"))),
-            h("tbody", null, referrals.map(ref => 
-              h("tr", { key: ref.id }, 
-                h("td", null, ref.name), h("td", null, ref.email), 
-                h("td", null, h("span", { className: "badge " + ref.status.toLowerCase() }, ref.status)),
-                h("td", null, ref.reward)
-              )
-            ))
+      // --- NETWORK ---
+      activeTab === "network" && h("div", { className: "tab-body" },
+        h("div", { className: "network-table-card" },
+          h("table", null, 
+            h("thead", null, h("tr", null, h("th", null, "Name"), h("th", null, "Status"))),
+            h("tbody", null, h("tr", null, h("td", null, "Sabbir Hossain"), h("td", null, "Active")))
+          )
+        )
+      ),
+
+      // --- CASINO GAMES ---
+      activeTab === "games" && h("div", { className: "casino-view" },
+        h("div", { className: "spin-section" },
+          h("div", { className: "wheel-container" },
+            h("div", { className: "wheel-pointer" }),
+            h("div", { className: "wheel-main", style: { transform: `rotate(${rotation}deg)` } },
+              WHEEL_VALS.map((v, i) => h("div", { key: i, className: "wheel-seg", style: { transform: `rotate(${i * (360/14)}deg)` } }, h("span", null, v)))
+            )
+          ),
+          h("button", { className: "btn-spin", onClick: handleSpin, disabled: isSpinning }, "SPIN (20 Coins)")
+        )
+      ),
+
+      // --- PROFILE SECTION ---
+      activeTab === "profile" && h("div", { className: "profile-view" },
+        h("div", { className: "profile-card" },
+          h("div", { className: "profile-top-grad" }),
+          h("div", { className: "profile-info" },
+            h("div", { className: "avatar-large" }, user.name[0]),
+            h("h1", null, user.name),
+            h("p", null, user.email),
+            h("div", { className: "info-grid" },
+              h("div", { className: "info-item" }, h("label", null, "Referral Code"), h("p", null, user.referralCode)),
+              h("div", { className: "info-item" }, h("label", null, "Total Earned"), h("p", null, "$"+user.earnings))
+            ),
+            h("button", { className: "btn-profile-logout", onClick: logout }, "Sign Out")
           )
         )
       )

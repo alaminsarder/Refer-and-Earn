@@ -8,53 +8,58 @@ const API_URL = window.location.hostname === "localhost" ? "http://localhost:500
 
 export default function Register() {
   const navigate = useNavigate();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [refCode, setRefCode] = useState("");
-  const [message, setMessage] = useState("");
+  const [formData, setFormData] = useState({ name: "", email: "", password: "", referralCode: "" });
+  const [msg, setMsg] = useState({ type: "", text: "" });
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const code = params.get("ref");
-    if (code) setRefCode(code);
+    if (code) setFormData(prev => ({ ...prev, referralCode: code }));
   }, []);
+
+  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setMsg({ type: "", text: "Processing..." });
     try {
-      await axios.post(`${API_URL}/api/auth/register`, { name, email, password, referralCode: refCode });
-      alert("Registration Successful!");
+      await axios.post(`${API_URL}/api/auth/register`, formData);
+      alert("Account Created Successfully!");
       navigate("/login");
     } catch (err) {
-      setMessage(err.response?.data?.message || "Registration failed");
+      setMsg({ type: "error", text: err.response?.data?.message || "Registration failed" });
     }
   };
 
-  return h("div", { className: "auth-container" },
-    h("div", { className: "auth-card" },
-      h("h2", { className: "auth-title" }, "Create Account"),
-      message && h("p", { style: { color: "red" } }, message),
-      h("form", { onSubmit: handleSubmit, className: "auth-form" },
-        h("div", { className: "input-group" },
-          h("label", null, "Full Name"),
-          h("input", { type: "text", value: name, onChange: (e) => setName(e.target.value), required: true })
-        ),
-        h("div", { className: "input-group" },
-          h("label", null, "Email Address"),
-          h("input", { type: "email", value: email, onChange: (e) => setEmail(e.target.value), required: true })
-        ),
-        h("div", { className: "input-group" },
-          h("label", null, "Password"),
-          h("input", { type: "password", value: password, onChange: (e) => setPassword(e.target.value), required: true })
-        ),
-        h("div", { className: "input-group" },
-          h("label", null, "Referral Code"),
-          h("input", { type: "text", className: "ref-highlight", value: refCode, onChange: (e) => setRefCode(e.target.value) })
-        ),
-        h("button", { type: "submit", className: "btn-auth" }, "Create Account")
+  return h("div", { className: "auth-wrapper" },
+    h("div", { className: "auth-glass-card" },
+      h("div", { className: "auth-head" },
+        h("h2", null, "Join ", h("span", { className: "text-grad" }, "ReferEarn")),
+        h("p", null, "Create an account and start earning rewards")
       ),
-      h("p", { className: "auth-switch" }, "Already member? ", h(Link, { to: "/login" }, "Login"))
+      msg.text && h("p", { className: `alert ${msg.type}` }, msg.text),
+      h("form", { onSubmit: handleSubmit, className: "form-stack" },
+        h("div", { className: "field" },
+          h("label", null, "Full Name"),
+          h("input", { type: "text", name: "name", placeholder: "Enter your full name", required: true, value: formData.name, onChange: handleChange })
+        ),
+        h("div", { className: "field" },
+          h("label", null, "Email Address"),
+          h("input", { type: "email", name: "email", placeholder: "name@example.com", required: true, value: formData.email, onChange: handleChange })
+        ),
+        h("div", { className: "field" },
+          h("label", null, "Password"),
+          h("input", { type: "password", name: "password", placeholder: "Min 6 characters", required: true, value: formData.password, onChange: handleChange })
+        ),
+        h("div", { className: "field" },
+          h("label", null, "Referral Code (Optional)"),
+          h("input", { type: "text", name: "referralCode", placeholder: "Code from your friend", value: formData.referralCode, onChange: handleChange, className: "ref-highlight" })
+        ),
+        h("button", { type: "submit", className: "btn-gradient" }, "Create Account")
+      ),
+      h("div", { className: "auth-footer" },
+        h("p", null, "Already a member? ", h(Link, { to: "/login" }, "Login here"))
+      )
     )
   );
 }
